@@ -64,18 +64,25 @@ func getIngress(clientset kubernetes.Clientset) ([]v1.Ingress, error) {
 
 }
 
-// get full slug from ingress items
-func getSlug(i []v1.Ingress) ([]string, []string) {
+func inspectIngress(i []v1.Ingress) ([]string, []string, []bool, []bool) {
 
-	// create hostSlice and BackendSlice
+	// slice for hosts
 	var hs []string
+	// slice for backend
 	var bs []string
+	// slice for annotation keys
+	var ls []string
+	// slice for whitelist
+	var wl []bool
+	// slice for helm annotation
+	var hl []bool
 
 	for value := range i {
 
 		ingRuleHost := &i[value].Spec.Rules[0].Host
 		ingRulePath := &i[value].Spec.Rules[0].IngressRuleValue.HTTP.Paths[0].Path
 		ingBackendService := &i[value].Spec.Rules[0].IngressRuleValue.HTTP.Paths[0].Backend.ServiceName
+		ingAnnotation := &i[value].Annotations
 
 		// use regexp to replace these characters with nothing
 		re, err := regexp.Compile(`[().*?$+]`)
@@ -84,8 +91,6 @@ func getSlug(i []v1.Ingress) ([]string, []string) {
 		}
 
 		*ingRulePath = re.ReplaceAllString(*ingRulePath, "")
-
-		//fmt.Printf("%s \n", *ingRuleHost)
 
 		// look for ' | ' in path, split it and put value in a slice.
 		split := strings.Split(*ingRulePath, "|")
@@ -101,32 +106,74 @@ func getSlug(i []v1.Ingress) ([]string, []string) {
 
 		}
 
+		// add key of maps into slice 'ls'
+		for i, _ := range *ingAnnotation {
+			ls = append(ls, i)
+
+		}
+
+		for _, j := range ls {
+			// Check if nginx whitelist annotation is there.
+			if j == "nginx.ingress.kubernetes.io/whitelist-source-range" {
+
+				wl = append(wl, true) //possible whitelist
+			} else {
+				wl = append(wl, false) //no nginx whitelist
+			}
+			// Check if helm annotation is there.
+			if j == "meta.helm.sh/release-name" {
+
+				hl = append(wl, true) //possible helm chart
+			} else {
+				hl = append(wl, false) //no helm chart
+			}
+
+		}
+
 	}
-	return hs, bs
+	return hs, bs, wl, hl
 
 }
 
-func statusChecker(s string) {
+func statusChecker(s string) bool {
 	_, err := http.Get(s)
+	var resp bool
 
 	if err != nil {
-		fmt.Printf("🔴 %s\n", s)
+		resp = false
 	} else {
-		fmt.Printf("🟢 %s\n", s)
+		resp = true
+
 	}
+	return resp
 
 }
 
 func main() {
 	clientset, _ := getCluster()
 	ingItems, _ := getIngress(*clientset)
-	hs, _ := getSlug(ingItems)
+	hs, _, wl, hl := inspectIngress(ingItems)
+
+	i := 0
 
 	for _, host := range hs {
-		//fmt.Println(host)
 		url := "http://" + host
-		statusChecker(url)
+
+		if !statusChecker(url) && !wl[i] && !hl[i] {
+			fmt.Printf("🔴 %s \n", host)
+			fmt.Printf("Remove Ingress. Y/N: ")
+			var di string
+			fmt.Scanln(&di)
+			if di == "Y" || di == "y" {
+				fmt.Println("Removing Ingress...")
+			}
+
+		}
+
+		i++
 
 	}
+
+	fmt.Printf("\n🔎💻 %d URL's \n", len(hs))
 
 }

@@ -11,3 +11,9 @@
 # Other
 *.out
 go.work
+
+# Build directory
+bin
+/bin
+
+.DS_store
