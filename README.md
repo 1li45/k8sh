@@ -9,9 +9,10 @@
 - Implement Goroutines.
 
 
-#### NEW FEUTURES:
+#### NEW FEATURES:
 - Check for dead Volumes by checking the activity.
 
 
 ### V0.1.0
-This release will currently only check all ingresses in your current cluster context.
+This release will currently only check if the ingresses in your cluster are dead.
+Find the binaries in /bin.
