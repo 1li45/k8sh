@@ -18,6 +18,9 @@ jobs:
       with:
         go-version: 1.18
 
-    - name: Build
-      run: go build -v ./...
+    - name: Build for Windows x64
+      run: GOOS=linux GOARCH=amd64 go build -v ./... -o bin/janitor_win_x64.exe
+      
+    - name: Build for Darwin ARM
+      run: GOOS=darwin GOARCH=arm go build -v ./... -o bin/janitor_darwin_arm
 
