@@ -5,11 +5,21 @@ package main
 // Goal of this application is to learn and get familiar with the client-go package.
 
 import (
+	"context"
 	"flag"
-	"fmt"
+	"log"
+	"net/http"
+	"path/filepath"
+	"regexp"
+	"strings"
+
+	v1 "k8s.io/api/extensions/v1beta1"
+	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
+	"k8s.io/client-go/kubernetes"
+	"k8s.io/client-go/tools/clientcmd"
+	"k8s.io/client-go/util/homedir"
 )
 
-<<<<<<< HEAD
 func getCluster() (*kubernetes.Clientset, error) {
 	var kubeconfig *string
 	if home := homedir.HomeDir(); home != "" {
@@ -38,12 +48,13 @@ func getIngress(clientset kubernetes.Clientset) ([]v1.Ingress, error) {
 	if err != nil {
 		panic(err.Error())
 	}
+
 	// return ingress items
 	return ingresses.Items, nil
 
 }
 
-func inspectIngress(i []v1.Ingress) ([]string, []string, []bool, []bool) {
+func inspectIngress(i []v1.Ingress) ([]string, []string, []string, []string) {
 
 	// slice for hosts
 	var hs []string
@@ -52,9 +63,12 @@ func inspectIngress(i []v1.Ingress) ([]string, []string, []bool, []bool) {
 	// slice for annotation keys
 	var ls []string
 	// slice for whitelist
-	var wl []bool
+	var wl []string
 	// slice for helm annotation
-	var hl []bool
+	var hl []string
+
+	//var nameslice []*string
+	//var namespaceslice []*string
 
 	for value := range i {
 
@@ -85,7 +99,6 @@ func inspectIngress(i []v1.Ingress) ([]string, []string, []bool, []bool) {
 
 		}
 
-		// add key of maps into slice 'ls'
 		for i, _ := range *ingAnnotation {
 			ls = append(ls, i)
 
@@ -95,21 +108,22 @@ func inspectIngress(i []v1.Ingress) ([]string, []string, []bool, []bool) {
 			// Check if nginx whitelist annotation is there.
 			if j == "nginx.ingress.kubernetes.io/whitelist-source-range" {
 
-				wl = append(wl, true) //possible whitelist
+				wl = append(wl, "🟢") //possible whitelist
 			} else {
-				wl = append(wl, false) //no nginx whitelist
+				wl = append(wl, "🔴") //no nginx whitelist
 			}
 			// Check if helm annotation is there.
 			if j == "meta.helm.sh/release-name" {
 
-				hl = append(wl, true) //possible helm chart
+				hl = append(hl, "🟢") //possible helm chart
 			} else {
-				hl = append(wl, false) //no helm chart
+				hl = append(hl, "🔴") //no helm chart
 			}
 
 		}
 
 	}
+
 	return hs, bs, wl, hl
 
 }
@@ -125,64 +139,5 @@ func statusChecker(s string) bool {
 
 	}
 	return resp
-=======
-var (
-	ing bool
-)
->>>>>>> 02ee15f (Flags added & Ingress code moved to ingress.go)
-
-func init() {
-	flag.BoolVar(&ing, "ing", false, "Check cluster for dead Ingresses.")
-}
-
-func main() {
-<<<<<<< HEAD
-	clientset, _ := getCluster()
-	ingItems, _ := getIngress(*clientset)
-	hs, _, wl, hl := inspectIngress(ingItems)
-
-	i := 0
-
-	for _, host := range hs {
-		url := "http://" + host
-
-		if !statusChecker(url) && !wl[i] && !hl[i] {
-			fmt.Printf("🔴 %s \n", host)
-			fmt.Printf("Remove Ingress. Y/N: ")
-			var di string
-			fmt.Scanln(&di)
-			if di == "Y" || di == "y" {
-				fmt.Println("Removing Ingress...")
-			}
-
-		}
-
-		i++
-=======
-
-	flag.Parse()
-
-	if ing {
-		clientset, _ := getCluster()
-		ingItems, _ := getIngress(*clientset)
-		hs, _, wl, hl := inspectIngress(ingItems)
-		i := 0
-		for _, host := range hs {
-			url := "http://" + host
-
-			if !statusChecker(url) {
-				fmt.Printf("🔴 %s \n\t Whitelist: %s \n\t Helm: %s\n", host, wl[i], hl[i])
-
-			}
-
-			i++
-
-		}
-		fmt.Printf("\n🔎💻 %d URL's \n", len(hs))
->>>>>>> 02ee15f (Flags added & Ingress code moved to ingress.go)
-
-	}
-
-	fmt.Printf("\n🔎💻 %d URL's \n", len(hs))
 
 }
