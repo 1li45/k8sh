@@ -1,9 +1,5 @@
 package main
 
-// Copyright 2022 Ilias Yacoubi (hi@ilias.sh)
-
-// Goal of this application is to learn and get familiar with the client-go package.
-
 import (
 	"context"
 	"flag"
