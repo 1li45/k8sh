@@ -50,7 +50,7 @@ func getIngress(clientset kubernetes.Clientset) ([]v1.Ingress, error) {
 
 }
 
-func inspectIngress(i []v1.Ingress) ([]string, []string, []string, []string) {
+func inspectIngress(i []v1.Ingress) ([]string, []string, []bool, []bool, []string, []string) {
 
 	// slice for hosts
 	var hs []string
@@ -59,15 +59,17 @@ func inspectIngress(i []v1.Ingress) ([]string, []string, []string, []string) {
 	// slice for annotation keys
 	var ls []string
 	// slice for whitelist
-	var wl []string
+	var wl []bool
 	// slice for helm annotation
-	var hl []string
+	var hl []bool
 
-	//var nameslice []*string
-	//var namespaceslice []*string
+	var in []string
+	var ins []string
 
 	for value := range i {
 
+		ingName := &i[value].Name
+		ingNamespace := &i[value].Namespace
 		ingRuleHost := &i[value].Spec.Rules[0].Host
 		ingRulePath := &i[value].Spec.Rules[0].IngressRuleValue.HTTP.Paths[0].Path
 		ingBackendService := &i[value].Spec.Rules[0].IngressRuleValue.HTTP.Paths[0].Backend.ServiceName
@@ -91,36 +93,40 @@ func inspectIngress(i []v1.Ingress) ([]string, []string, []string, []string) {
 			}
 			fullSlug := *ingRuleHost + value
 			hs = append(hs, fullSlug)
+			//bs = append(bs, *ingBackendService)
+
+			for i, _ := range *ingAnnotation {
+				ls = append(ls, i)
+
+			}
+
+			for _, j := range ls {
+				// Check if nginx whitelist annotation is there.
+				if j == "nginx.ingress.kubernetes.io/whitelist-source-range" {
+
+					wl = append(wl, true) //possible whitelist
+				} else {
+					wl = append(wl, false) //no nginx whitelist
+				}
+				// Check if helm annotation is there.
+				if j == "meta.helm.sh/release-name" || j == "helm.sh/chart" {
+
+					hl = append(hl, true) //possible helm chart
+				} else {
+					hl = append(hl, false) //no helm chart
+				}
+
+			}
+
 			bs = append(bs, *ingBackendService)
-
-		}
-
-		for i, _ := range *ingAnnotation {
-			ls = append(ls, i)
-
-		}
-
-		for _, j := range ls {
-			// Check if nginx whitelist annotation is there.
-			if j == "nginx.ingress.kubernetes.io/whitelist-source-range" {
-
-				wl = append(wl, "🟢") //possible whitelist
-			} else {
-				wl = append(wl, "🔴") //no nginx whitelist
-			}
-			// Check if helm annotation is there.
-			if j == "meta.helm.sh/release-name" {
-
-				hl = append(hl, "🟢") //possible helm chart
-			} else {
-				hl = append(hl, "🔴") //no helm chart
-			}
+			in = append(in, *ingName)
+			ins = append(ins, *ingNamespace)
 
 		}
 
 	}
 
-	return hs, bs, wl, hl
+	return hs, bs, wl, hl, in, ins
 
 }
 
@@ -135,5 +141,13 @@ func statusChecker(s string) bool {
 
 	}
 	return resp
+
+}
+
+func deleteIngress(clientset kubernetes.Clientset, name string, namespace string) {
+	err := clientset.ExtensionsV1beta1().Ingresses(namespace).Delete(context.TODO(), name, metav1.DeleteOptions{})
+	if err != nil {
+		log.Fatal(err)
+	}
 
 }

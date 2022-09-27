@@ -20,17 +20,25 @@ func init() {
 func main() {
 
 	flag.Parse()
+	var ans string
 
 	if ing {
 		clientset, _ := getCluster()
 		ingItems, _ := getIngress(*clientset)
-		hs, _, wl, hl := inspectIngress(ingItems)
+		hs, _, wl, hl, in, ins := inspectIngress(ingItems)
 		i := 0
+
 		for _, host := range hs {
 			url := "http://" + host
 
-			if !statusChecker(url) {
-				fmt.Printf("🔴 %s \n\t Whitelist: %s \n\t Helm: %s\n", host, wl[i], hl[i])
+			if !statusChecker(url) && !wl[i] && !hl[i] {
+				fmt.Printf("🔴 %s \n", host)
+				fmt.Printf("Delete ingress %s in %s y/n: ", in[i], ins[i])
+				fmt.Scanln(&ans)
+				if ans == "Y" || ans == "y" {
+					deleteIngress(*clientset, in[i], ins[i])
+
+				}
 
 			}
 
