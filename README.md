@@ -6,7 +6,7 @@
 ### TODO:
 #### INGRESS FUNCTION:
 - Check if there are multiple Hosts and Paths per Item in getSlug function
-- Implement Goroutines.
+- Implement Go-routines.
 
 
 #### NEW FEATURES:
