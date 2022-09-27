@@ -9,7 +9,8 @@ import (
 	"regexp"
 	"strings"
 
-	v1 "k8s.io/api/extensions/v1beta1"
+	//v1 "k8s.io/api/extensions/v1beta1"
+	v1 "k8s.io/api/networking/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/client-go/kubernetes"
 	"k8s.io/client-go/tools/clientcmd"
@@ -40,7 +41,7 @@ func getCluster() (*kubernetes.Clientset, error) {
 func getIngress(clientset kubernetes.Clientset) ([]v1.Ingress, error) {
 
 	// get all ingresses
-	ingresses, err := clientset.ExtensionsV1beta1().Ingresses("").List(context.TODO(), metav1.ListOptions{})
+	ingresses, err := clientset.NetworkingV1().Ingresses("").List(context.TODO(), metav1.ListOptions{})
 	if err != nil {
 		panic(err.Error())
 	}
@@ -72,7 +73,7 @@ func inspectIngress(i []v1.Ingress) ([]string, []string, []bool, []bool, []strin
 		ingNamespace := &i[value].Namespace
 		ingRuleHost := &i[value].Spec.Rules[0].Host
 		ingRulePath := &i[value].Spec.Rules[0].IngressRuleValue.HTTP.Paths[0].Path
-		ingBackendService := &i[value].Spec.Rules[0].IngressRuleValue.HTTP.Paths[0].Backend.ServiceName
+		ingBackendService := &i[value].Spec.Rules[0].IngressRuleValue.HTTP.Paths[0].Backend.Service.Name
 		ingAnnotation := &i[value].Annotations
 
 		// use regexp to replace these characters with nothing
@@ -145,7 +146,7 @@ func statusChecker(s string) bool {
 }
 
 func deleteIngress(clientset kubernetes.Clientset, name string, namespace string) {
-	err := clientset.ExtensionsV1beta1().Ingresses(namespace).Delete(context.TODO(), name, metav1.DeleteOptions{})
+	err := clientset.NetworkingV1().Ingresses(namespace).Delete(context.TODO(), name, metav1.DeleteOptions{})
 	if err != nil {
 		log.Fatal(err)
 	}
