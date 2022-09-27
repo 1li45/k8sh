@@ -15,4 +15,3 @@
 
 ### V0.1.0
 This release will currently only check if the ingresses in your cluster are dead.
-Find the binaries in /bin.
