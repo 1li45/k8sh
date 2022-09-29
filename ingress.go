@@ -2,6 +2,7 @@ package main
 
 import (
 	"context"
+	"crypto/tls"
 	"flag"
 	"log"
 	"net/http"
@@ -132,6 +133,8 @@ func inspectIngress(i []v1.Ingress) ([]string, []string, []bool, []bool, []strin
 }
 
 func statusChecker(s string) bool {
+	// ignore expired certificates
+	http.DefaultTransport.(*http.Transport).TLSClientConfig = &tls.Config{InsecureSkipVerify: true}
 	_, err := http.Get(s)
 	var resp bool
 
