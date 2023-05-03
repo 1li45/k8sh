@@ -1,17 +1,23 @@
-# Janitor
-
-### A GO Cli application that will check your Kubernetes Cluster for dead resources.
-
-
-### TODO:
-#### INGRESS FUNCTION:
-- Check if there are multiple Hosts and Paths per Item in getSlug function
-- Implement Go-routines.
+# K8SH
+Kubernetes Helper
 
 
-#### NEW FEATURES:
-- Check for dead Volumes by checking the activity.
+A personal Go cli application for Kubernetes with handy features
 
 
-### V0.1.0
-This release will currently only check if the ingresses in your cluster are dead.
+#### Features:
+- Check for dead ingresses.
+- Check read & write history of the Azure persistent volume.
+
+
+##### Note:
+You need to have azure cli installed and you need to be logged in and have access to the appropriate subscription. 
+
+##### Build:
+go build -o janitor
+
+##### Usage
+
+janitor --help
+
+    

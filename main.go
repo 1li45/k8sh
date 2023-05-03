@@ -7,23 +7,27 @@ package main
 import (
 	"flag"
 	"fmt"
+	"log"
 )
 
 var (
 	ing bool
+	pv  bool
 )
 
 func init() {
 	flag.BoolVar(&ing, "ing", false, "Check cluster for dead Ingresses.")
+	flag.BoolVar(&pv, "pv", false, "Check cluster for dead Persistant Volumes")
 }
 
 func main() {
 
 	flag.Parse()
 	var ans string
+	clientset, err := getCluster()
 
 	if ing {
-		clientset, _ := getCluster()
+
 		ingItems, _ := getIngress(*clientset)
 		hs, _, wl, hl, in, ins := inspectIngress(ingItems)
 		i := 0
@@ -46,6 +50,14 @@ func main() {
 
 		}
 		fmt.Printf("\n🔎💻 %d URL's \n", len(hs))
+
+	}
+
+	if pv {
+		err = listStorageObjects(*&clientset)
+		if err != nil {
+			log.Fatalf("Could not list storage objects: %v", err)
+		}
 
 	}
 

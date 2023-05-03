@@ -10,8 +10,7 @@ import (
 	"regexp"
 	"strings"
 
-	//v1 "k8s.io/api/extensions/v1beta1"
-	v1 "k8s.io/api/networking/v1"
+	net "k8s.io/api/networking/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/client-go/kubernetes"
 	"k8s.io/client-go/tools/clientcmd"
@@ -39,7 +38,7 @@ func getCluster() (*kubernetes.Clientset, error) {
 }
 
 // input clientset. return ingress items.
-func getIngress(clientset kubernetes.Clientset) ([]v1.Ingress, error) {
+func getIngress(clientset kubernetes.Clientset) ([]net.Ingress, error) {
 
 	// get all ingresses
 	ingresses, err := clientset.NetworkingV1().Ingresses("").List(context.TODO(), metav1.ListOptions{})
@@ -52,7 +51,7 @@ func getIngress(clientset kubernetes.Clientset) ([]v1.Ingress, error) {
 
 }
 
-func inspectIngress(i []v1.Ingress) ([]string, []string, []bool, []bool, []string, []string) {
+func inspectIngress(i []net.Ingress) ([]string, []string, []bool, []bool, []string, []string) {
 
 	// slice for hosts
 	var hs []string
