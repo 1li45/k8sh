@@ -16,8 +16,8 @@ var (
 )
 
 func init() {
-	flag.BoolVar(&ing, "ing", false, "Check cluster for dead Ingresses.")
-	flag.BoolVar(&pv, "pv", false, "Check cluster for dead Persistant Volumes")
+	flag.BoolVar(&ing, "ing", false, "check dead ingresses.")
+	flag.BoolVar(&pv, "pv", false, "check persistent volumes.")
 }
 
 func main() {
