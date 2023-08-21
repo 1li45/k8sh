@@ -1,8 +1,8 @@
-# K8SH
-Kubernetes Helper
+# AKS-helper
+AKS / Kubernetes helper
 
 
-A personal Go cli application for Kubernetes with handy features
+A personal Go cli application for AKS with handy features
 
 
 #### Features:
@@ -14,10 +14,10 @@ A personal Go cli application for Kubernetes with handy features
 You need to have azure cli installed and you need to be logged in and have access to the appropriate subscription. 
 
 ##### Build:
-go build -o janitor
+go build -o akshelp
 
 ##### Usage
 
-janitor --help
+akshelp --help
 
     
